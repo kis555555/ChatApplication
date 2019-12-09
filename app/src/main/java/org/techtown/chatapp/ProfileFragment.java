@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class ProfileFragment extends Fragment
 {
-    ImageView ivUser;
+    ImageView ivUser;//kk
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
