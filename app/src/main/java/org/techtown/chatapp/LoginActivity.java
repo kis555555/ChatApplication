@@ -1,9 +1,11 @@
 package org.techtown.chatapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
@@ -14,6 +16,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.regex.Pattern;
 
@@ -27,8 +30,12 @@ public class LoginActivity extends AppCompatActivity
     String stEmail;
     String stPassword;
 
+    String userEmail;
 
-     // 비밀번호 정규식
+    String TAG = "LoginActivity";
+
+
+    // 비밀번호 정규식
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^[a-zA-Z0-9!@.#$%^&*?_~]{4,16}$");
 
 
@@ -47,6 +54,30 @@ public class LoginActivity extends AppCompatActivity
 
         etEmail.setText("");
         etPassword.setText("");
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    // User is signed in
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+
+                    SharedPreferences sharedPreferences = getSharedPreferences("email", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("uid", user.getUid());
+                    editor.putString("email", user.getEmail());
+                    editor.apply();
+
+
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                }
+                // ...
+            }
+        };
+
 
 
 
@@ -104,6 +135,8 @@ public class LoginActivity extends AppCompatActivity
 
     }
 
+
+
     public void userLogin(String email, String password)
     {
 
@@ -114,8 +147,10 @@ public class LoginActivity extends AppCompatActivity
                     public void onComplete(@NonNull Task<AuthResult> task)
                     {
 
-                        if (task.isSuccessful()) {
+                        if (task.isSuccessful())
+                        {
                             // 로그인 성공
+
                             Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
                             Intent in = new Intent(LoginActivity.this,TabActivity.class);
                             startActivity(in);
